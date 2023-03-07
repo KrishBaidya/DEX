@@ -91,19 +91,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint128",
-						"name": "meme_amount",
-						"type": "uint128"
-					}
-				],
-				"name": "_buy",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "_k",
 				"outputs": [
@@ -114,19 +101,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint128",
-						"name": "meme_amount",
-						"type": "uint128"
-					}
-				],
-				"name": "_sell",
-				"outputs": [],
-				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -157,7 +131,7 @@
 				],
 				"name": "_unstack",
 				"outputs": [],
-				"stateMutability": "payable",
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -176,32 +150,6 @@
 			{
 				"inputs": [],
 				"name": "_y",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "ethBalance",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "memeBalance",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -250,6 +198,19 @@
 				"name": "renounceOwnership",
 				"outputs": [],
 				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "stackingRate",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -378,11 +339,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0xae1269b63ca3402ceebc35aaf3240874f9e768458949db8bee6599188deb97f6",
+			"keccak256": "0x089ab3f1de9096a23ca89f1c1dc97480c808270b410e8a62653caf1de1084076",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5fa9b463d69a5bad4a15b195f8e7bb959f84ef430c0db77152f4449309c3c358",
-				"dweb:/ipfs/QmbTkjxBQNEYoLhRmFNnxswtK4CKoaTthwMbZrSad5Dpfj"
+				"bzz-raw://fb5a1fa815a0da7f932d82fc75de1ca32d1eb4bbecd7bd0f5b41ff3ff04589d6",
+				"dweb:/ipfs/QmNxt1GczGkxtMP7ZHAzGiVNn6FVSvNhVWo8H2RkwbQYdu"
 			]
 		},
 		"MEME.sol": {
