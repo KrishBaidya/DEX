@@ -17,9 +17,6 @@ contract DEX is Pausable, Ownable {
 
     mapping(address => Stack_Struct) public Stacked;
 
-    // uint256 public memeBalance = 10000000000000000;
-    // uint256 public ethBalance = 10000000000000000;
-
     uint256 public stackingRate;
 
     uint256 public _k;
@@ -44,9 +41,20 @@ contract DEX is Pausable, Ownable {
         _k = _x * _y;
     }
 
-    function _stack(uint256 meme_amount) public payable {
+    function stack(uint256 meme_amount) public payable {
+        require(stackingRate <= msg.value / meme_amount);
+        _stack(meme_amount);
+    }
+
+    uint256 public eth_amount2;
+
+    function unstack(uint256 meme_amount) public {
+        eth_amount2 = _y - (stackingRate * (_x - meme_amount));
+        _unstack(meme_amount, eth_amount2);
+    }
+
+    function _stack(uint256 meme_amount) internal {
         meme.transferFrom(msg.sender, address(this), meme_amount);
-        
 
         _x += meme_amount;
         _y += msg.value;
@@ -60,7 +68,7 @@ contract DEX is Pausable, Ownable {
         _updateK();
     }
 
-    function _unstack(uint256 meme_amount, uint256 eth_amount) public {
+    function _unstack(uint256 meme_amount, uint256 eth_amount) internal {
         stackingRate = (_y / _x) - (eth_amount / _x);
 
         _x -= meme_amount;
