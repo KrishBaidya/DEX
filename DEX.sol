@@ -42,15 +42,17 @@ contract DEX is Pausable, Ownable {
     }
 
     function stack(uint256 meme_amount) public payable {
-        require(stackingRate <= msg.value / meme_amount);
+        require(stackingRate <= 1 + (msg.value / meme_amount));
         _stack(meme_amount);
     }
 
-    uint256 public eth_amount2;
+    // uint256 public eth_amount2;
+    // uint256 public meme_amount2;
 
-    function unstack(uint256 meme_amount) public {
-        eth_amount2 = _y - (stackingRate * (_x - meme_amount));
-        _unstack(meme_amount, eth_amount2);
+    function unstack(uint256 meme_amount) public  {
+        uint256 meme_amount2 = _x - meme_amount;
+        uint256 eth_amount2 = _y - ((stackingRate * meme_amount2) / _y);
+        _unstack(meme_amount, eth_amount2 , msg.sender);
     }
 
     function _stack(uint256 meme_amount) internal {
@@ -63,23 +65,27 @@ contract DEX is Pausable, Ownable {
         Stacked[msg.sender].eth_amount += msg.value;
         Stacked[msg.sender].time = block.timestamp;
 
-        stackingRate = (_y / _x) + ((msg.value / meme_amount) / _y);
+        stackingRate = 1 + (_y / _x);
 
         _updateK();
     }
 
-    function _unstack(uint256 meme_amount, uint256 eth_amount) internal {
-        stackingRate = (_y / _x) - (eth_amount / _x);
-
+    function _unstack(uint256 meme_amount, uint256 eth_amount , address to) public {
         _x -= meme_amount;
         _y -= eth_amount;
 
-        Stacked[msg.sender].meme_amount -= meme_amount;
-        Stacked[msg.sender].eth_amount -= eth_amount;
-        Stacked[msg.sender].time = block.timestamp;
+        Stacked[to].meme_amount -= meme_amount;
+        Stacked[to].eth_amount -= eth_amount;
+        Stacked[to].time = block.timestamp;
 
-        meme.transfer(msg.sender, meme_amount);
-        payable(msg.sender).transfer(eth_amount);
+        meme.transfer(to, meme_amount);
+        payable(to).transfer(eth_amount);
+
+        if(_x == 0){
+            _x = 1;
+        }
+
+        stackingRate = 1 + (_y / _x);
 
         _updateK();
     }

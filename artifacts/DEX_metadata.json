@@ -109,24 +109,16 @@
 						"internalType": "uint256",
 						"name": "meme_amount",
 						"type": "uint256"
-					}
-				],
-				"name": "_stack",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "meme_amount",
-						"type": "uint256"
 					},
 					{
 						"internalType": "uint256",
 						"name": "eth_amount",
 						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
 					}
 				],
 				"name": "_unstack",
@@ -201,6 +193,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "meme_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "stack",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "stackingRate",
 				"outputs": [
@@ -229,6 +234,19 @@
 			{
 				"inputs": [],
 				"name": "unpause",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "meme_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "unstack",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -339,11 +357,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0x089ab3f1de9096a23ca89f1c1dc97480c808270b410e8a62653caf1de1084076",
+			"keccak256": "0xbe9c05b92bf296d5ad8a9d65e64319be03f5776b79c44b60a9a621f6d27d73cf",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://fb5a1fa815a0da7f932d82fc75de1ca32d1eb4bbecd7bd0f5b41ff3ff04589d6",
-				"dweb:/ipfs/QmNxt1GczGkxtMP7ZHAzGiVNn6FVSvNhVWo8H2RkwbQYdu"
+				"bzz-raw://1cf981496bd183dea17391df8501506aa2dc22201853524d88ce33e84b809681",
+				"dweb:/ipfs/QmYFgY3mtMs6eVaZhG3uc5Z9yK6kbPXHAdNnKek7BQpzWx"
 			]
 		},
 		"MEME.sol": {
