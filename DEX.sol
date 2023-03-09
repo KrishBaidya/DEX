@@ -23,6 +23,8 @@ contract DEX is Pausable, Ownable {
     uint256 public _x;
     uint256 public _y;
 
+    uint256 public precision = 10**18;
+
     constructor(address addr) {
         meme = MEME(addr);
 
@@ -42,17 +44,14 @@ contract DEX is Pausable, Ownable {
     }
 
     function stack(uint256 meme_amount) public payable {
-        require(stackingRate <= 1 + (msg.value / meme_amount));
+        require(stackingRate <= (msg.value * precision / meme_amount));
         _stack(meme_amount);
     }
 
-    // uint256 public eth_amount2;
-    // uint256 public meme_amount2;
-
-    function unstack(uint256 meme_amount) public  {
+    function unstack(uint256 meme_amount) public {
         uint256 meme_amount2 = _x - meme_amount;
-        uint256 eth_amount2 = _y - ((stackingRate * meme_amount2) / _y);
-        _unstack(meme_amount, eth_amount2 , msg.sender);
+        uint256 eth_amount2 = ((stackingRate * meme_amount) / precision);
+        _unstack(meme_amount, eth_amount2, msg.sender);
     }
 
     function _stack(uint256 meme_amount) internal {
@@ -65,12 +64,16 @@ contract DEX is Pausable, Ownable {
         Stacked[msg.sender].eth_amount += msg.value;
         Stacked[msg.sender].time = block.timestamp;
 
-        stackingRate = 1 + (_y / _x);
+        stackingRate = ((_y * precision) / _x);
 
         _updateK();
     }
 
-    function _unstack(uint256 meme_amount, uint256 eth_amount , address to) public {
+    function _unstack(
+        uint256 meme_amount,
+        uint256 eth_amount,
+        address to
+    ) public {
         _x -= meme_amount;
         _y -= eth_amount;
 
@@ -81,11 +84,11 @@ contract DEX is Pausable, Ownable {
         meme.transfer(to, meme_amount);
         payable(to).transfer(eth_amount);
 
-        if(_x == 0){
-            _x = 1;
+        if (_x == 0) {
+            stackingRate = 0;
+        } else {
+            stackingRate = (_y * precision) / _x;
         }
-
-        stackingRate = 1 + (_y / _x);
 
         _updateK();
     }

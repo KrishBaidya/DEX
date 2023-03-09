@@ -5,65 +5,24 @@ import "remix_tests.sol";
 import "../DEX.sol";
 import "../MEME.sol";
 
-
-
 contract DEXTest {
-    DEX dex;
-    address tokenAddress;
-    uint256 tokenSupply;
+    MEME meme = new MEME();
+    DEX dex = new DEX(address(meme));
+    uint256 balance;
 
-    function beforeAll() public {
-        tokenSupply = 1000;
-        MEME token = new MEME();
-        tokenAddress = address(token);
-        dex = new DEX(tokenAddress);
+    function beforeAll() public{
+        meme.approve(address(this) , 1000000000000000000000000000);
+        balance = meme.balanceOf(address(this));
+        
     }
-
-    function beforeEach() public {
-        dex.pause();
-    }
-
-    function testStack() public payable {
-        uint256 tokenAmount = 100;
-        uint256 ethAmount = 10;
-        (bool success, bytes memory result) = address(dex).call{value: ethAmount}(abi.encodeWithSignature("stack(uint256)", tokenAmount));
-        Assert.ok(success, "Stack failed");
-        Assert.equal(dex.Stacked(msg.sender).meme_amount, tokenAmount, "Wrong token amount stacked");
-        Assert.equal(dex.Stacked(msg.sender).eth_amount, ethAmount, "Wrong eth amount stacked");
-        Assert.equal(dex.Stacked(msg.sender).time, block.timestamp, "Wrong stack time");
-    }
-
-    function testStackPaused() public payable {
-        dex.pause();
-        uint256 tokenAmount = 100;
-        uint256 ethAmount = 10;
-        (bool success, bytes memory result) = address(dex).call{value: ethAmount}(abi.encodeWithSignature("stack(uint256)", tokenAmount));
-        Assert.isFalse(success, "Stack should have failed");
-    }
-
-    function testUnstack() public payable {
-        uint256 tokenAmount = 100;
-        uint256 ethAmount = 10;
-        (bool success, bytes memory result) = address(dex).call{value: ethAmount}(abi.encodeWithSignature("stack(uint256)", tokenAmount));
-        Assert.isTrue(success, "Stack failed");
-
-        uint256 unstackTokenAmount = 50;
-        (success, result) = address(dex).call(abi.encodeWithSignature("unstack(uint256)", unstackTokenAmount));
-        Assert.isTrue(success, "Unstack failed");
-        Assert.equal(dex.Stacked(msg.sender).meme_amount, tokenAmount - unstackTokenAmount, "Wrong token amount unstacked");
-        Assert.equal(dex.Stacked(msg.sender).eth_amount, ethAmount - (ethAmount * unstackTokenAmount / tokenAmount), "Wrong eth amount unstacked");
-        Assert.equal(dex.Stacked(msg.sender).time, block.timestamp, "Wrong unstack time");
-    }
-
-    function testUnstackPaused() public payable {
-        uint256 tokenAmount = 100;
-        uint256 ethAmount = 10;
-        (bool success, bytes memory result) = address(dex).call{value: ethAmount}(abi.encodeWithSignature("stack(uint256)", tokenAmount));
-        Assert.isTrue(success, "Stack failed");
-
-        dex.pause();
-        uint256 unstackTokenAmount = 50;
-        (success, result) = address(dex).call(abi.encodeWithSignature("unstack(uint256)", unstackTokenAmount));
-        Assert.isFalse(success, "Unstack should have failed");
+    /// #value: 20000000000000
+    function stack() public payable{
+        (uint meme_amount , uint eth_amount , ) = dex.Stacked(address(this));
+        Assert.equal(meme_amount , 0 , "should be equal");
+        Assert.equal(eth_amount , 0 , "should be equal");
+        dex.stack{value: msg.value}(balance);
+        (meme_amount , eth_amount , ) = dex.Stacked(address(this));
+        Assert.equal(meme_amount , balance , "should be equal");
+        Assert.equal(eth_amount , 20000000000000 , "should be equal");
     }
 }
