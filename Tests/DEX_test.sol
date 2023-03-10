@@ -6,23 +6,55 @@ import "../DEX.sol";
 import "../MEME.sol";
 
 contract DEXTest {
-    MEME meme = new MEME();
-    DEX dex = new DEX(address(meme));
-    uint256 balance;
+    DEX dex;
+    MEME meme;
+    
+    function beforeEach() public {
+        meme = new MEME();
+        dex = new DEX(address(meme));
 
-    function beforeAll() public{
-        meme.approve(address(this) , 1000000000000000000000000000);
-        balance = meme.balanceOf(address(this));
-        
+        meme.transfer(msg.sender , 100000000);
     }
-    /// #value: 20000000000000
-    function stack() public payable{
+    
+    function testStack() public {
+        // Ensure initial stacking rate is 0
+        Assert.equal(dex.stackingRate(), 0, "Initial stacking rate should be 0");
+        
+        // Transfer some MEME tokens to the contract
+        // meme.transfer(address(dex), 10000000);
+        
+        // Stack some tokens
+        dex.stack{value: 10000}(1000000);
+        
+        // Ensure stacking rate is set correctly
+        Assert.equal(dex.stackingRate(), 1000000000 / 1000000 * 10**18, "Stacking rate should be set correctly");
+        
+        // Ensure user's stack is recorded correctly
         (uint meme_amount , uint eth_amount , ) = dex.Stacked(address(this));
-        Assert.equal(meme_amount , 0 , "should be equal");
-        Assert.equal(eth_amount , 0 , "should be equal");
-        dex.stack{value: msg.value}(balance);
-        (meme_amount , eth_amount , ) = dex.Stacked(address(this));
-        Assert.equal(meme_amount , balance , "should be equal");
-        Assert.equal(eth_amount , 20000000000000 , "should be equal");
+        Assert.equal(meme_amount, 1000000, "User's MEME amount should be recorded correctly");
+        Assert.equal(eth_amount, 1000000000, "User's ETH amount should be recorded correctly");
+        
+        // Try to stack more tokens than allowed by the current rate (should fail)
+        (bool success,) = address(dex).call{value: 1000000000}(abi.encodeWithSignature("stack(uint256)", 100000000));
+        Assert.equal(success, false, "Stacking more tokens than allowed by the current rate should fail");
+    }
+    
+    function testUnstack() public {
+        // Transfer some MEME tokens to the contract
+        meme.transfer(address(dex), 10000000);
+        
+        // Stack some tokens
+        dex.stack{value: 1000000000}(1000000);
+        
+        // Unstack some tokens
+        dex.unstack(500000);
+        
+        // Ensure user's stack is updated correctly
+        (uint meme_amount , uint eth_amount , ) = dex.Stacked(address(this));
+        Assert.equal(meme_amount, 500000, "User's MEME amount should be updated correctly");
+        Assert.equal(eth_amount, 500000000, "User's ETH amount should be updated correctly");
+        
+        // Ensure stacking rate is updated correctly
+        Assert.equal(dex.stackingRate(), 1000000000 / 500000 * 10**18, "Stacking rate should be updated correctly");
     }
 }

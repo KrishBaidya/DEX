@@ -67,6 +67,11 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"name": "Stacked",
@@ -101,29 +106,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "meme_amount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "eth_amount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "to",
-						"type": "address"
-					}
-				],
-				"name": "_unstack",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -187,6 +169,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "precision",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "renounceOwnership",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -208,6 +203,19 @@
 			{
 				"inputs": [],
 				"name": "stackingRate",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "taxRate",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -242,7 +250,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "meme_amount",
+						"name": "index",
 						"type": "uint256"
 					}
 				],
@@ -357,11 +365,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0xbe9c05b92bf296d5ad8a9d65e64319be03f5776b79c44b60a9a621f6d27d73cf",
+			"keccak256": "0xb12291b8b8882b6ec709e2688dd8ca84b72ce3d22f9d6be40e6e3626aae8f611",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://1cf981496bd183dea17391df8501506aa2dc22201853524d88ce33e84b809681",
-				"dweb:/ipfs/QmYFgY3mtMs6eVaZhG3uc5Z9yK6kbPXHAdNnKek7BQpzWx"
+				"bzz-raw://2281e558eaf43570fdca23f25920937dd6ac5401081b971b87bf6f2668301e51",
+				"dweb:/ipfs/Qmc9YN3bW45UyG6zyimGk1QKkMkCuEYMjXSxG1CKLhwn8b"
 			]
 		},
 		"MEME.sol": {

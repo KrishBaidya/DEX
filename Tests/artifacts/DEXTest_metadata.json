@@ -7,16 +7,23 @@
 		"abi": [
 			{
 				"inputs": [],
-				"name": "beforeAll",
+				"name": "beforeEach",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
 				"inputs": [],
-				"name": "stack",
+				"name": "testStack",
 				"outputs": [],
-				"stateMutability": "payable",
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "testUnstack",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			}
 		],
@@ -27,11 +34,7 @@
 		},
 		"userdoc": {
 			"kind": "user",
-			"methods": {
-				"stack()": {
-					"notice": "#value: 20000000000000"
-				}
-			},
+			"methods": {},
 			"version": 1
 		}
 	},
@@ -108,11 +111,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0xf17bed18722334027231af6dc1f1de9f9533818589a6ccc74930adf5240b759b",
+			"keccak256": "0x2e10cfdc24d14693e9f7905edd2ed83b3bf1a3c08c73d18df7d85d5f6636987c",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://78738eed901b9a2fdda821de081060879be24b6e9dfbca7f9ec7a1c136a12aef",
-				"dweb:/ipfs/QmRGEpmFan1cdBAnahN29EVVL5DbnQcKBxvFTTe8mjSMTY"
+				"bzz-raw://5dc2b39756cc69624807aeb0cc5e6b91dddebb03732962e8f26895938b57838c",
+				"dweb:/ipfs/QmR7EaiXvafyy9KNgPzcCuQBrLDXGNajG32qjjaaX552bm"
 			]
 		},
 		"MEME.sol": {
@@ -124,11 +127,11 @@
 			]
 		},
 		"Tests/DEX_test.sol": {
-			"keccak256": "0xad3539501bbcfc16a1445f6cc95d846d4747a7d3a176fc7cccf60e452a887c9d",
+			"keccak256": "0x3f8741940acb3d5bfd8ae2b6289d3efbec03f57efac0bbe150f6ce116c2789ed",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://ace7a9bc3c79d48d8d6f642fab83ecbaef29f7708d5ac2fe913c5998e8a43671",
-				"dweb:/ipfs/QmQiwwqPcH24GV5qmNrB8BASpV46trL46SNNaQhxBpztsB"
+				"bzz-raw://61d8fa34764f624b09dbfe087ec8fabd1b6551c16deea78e2c183fc424f0f4b6",
+				"dweb:/ipfs/Qmarof9mX6D3DBqQi4jFyYRhB8qFQnCD8yS4m2f5GjLWaP"
 			]
 		},
 		"remix_tests.sol": {
