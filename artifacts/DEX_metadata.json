@@ -135,6 +135,25 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "dailyTax",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "owner",
 				"outputs": [
@@ -365,11 +384,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0xb12291b8b8882b6ec709e2688dd8ca84b72ce3d22f9d6be40e6e3626aae8f611",
+			"keccak256": "0x763aeef75e14b95522904e3e71a59768de90b75a6bf98bbd9c1e7edfe907e648",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://2281e558eaf43570fdca23f25920937dd6ac5401081b971b87bf6f2668301e51",
-				"dweb:/ipfs/Qmc9YN3bW45UyG6zyimGk1QKkMkCuEYMjXSxG1CKLhwn8b"
+				"bzz-raw://b64d736424185af61916d3ed998bdec6187473e30598ff3e480eda6cb6ee2a40",
+				"dweb:/ipfs/QmcSmYJDzTJBHAPGf5EPTnAHSTigXjwXXaYtBsxaYK4n1i"
 			]
 		},
 		"MEME.sol": {

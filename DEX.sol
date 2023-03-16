@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -16,6 +16,9 @@ contract DEX is Pausable, Ownable {
     ERC20 meme;
 
     mapping(address => Stack_Struct[]) public Stacked;
+
+    mapping(uint256 => uint256) public dailyTax;
+    uint256 lastUnstackday = block.timestamp;
 
     uint256 public stackingRate;
 
@@ -79,12 +82,10 @@ contract DEX is Pausable, Ownable {
 
     function _unstack(uint256 index) internal {
         Stack_Struct memory ss = Stacked[msg.sender][index];
+        uint256 tax = _distributeTax();
 
-        uint256 timestamp = block.timestamp - ss.time;
-        uint256 poolShare = ((ss.meme_amount * taxRate * timestamp) / _x);
-
-        uint256 meme_to_return = (poolShare * _x) / _k;
-        uint256 eth_to_return = (poolShare * _y) / _k;
+        uint256 meme_to_return = ss.meme_amount;
+        uint256 eth_to_return = ss.eth_amount + tax;
 
         _x -= meme_to_return;
         _y -= eth_to_return;
@@ -108,6 +109,19 @@ contract DEX is Pausable, Ownable {
             Stacked[msg.sender][i] = Stacked[msg.sender][i + 1];
         }
         Stacked[msg.sender].pop();
+    }
+
+    function _distributeTax() internal view returns (uint256) {
+        uint256 taxShare = 0;
+        if (dailyTax[block.timestamp / 1 days] > 0) {
+            uint256 numStacks = Stacked[msg.sender].length;
+            for (uint256 i = 0; i < numStacks; i++) {
+                Stack_Struct memory ss = Stacked[msg.sender][i];
+                uint256 poolShare = ((ss.meme_amount * precision) / _x);
+                taxShare += (poolShare * dailyTax[block.timestamp / 1 days]) / _k;
+            }
+        }
+        return taxShare;
     }
 
     // function secondsToDays(uint256 second) public pure returns (uint256) {
