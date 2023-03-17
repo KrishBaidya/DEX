@@ -18,7 +18,6 @@ contract DEX is Pausable, Ownable {
     mapping(address => Stack_Struct[]) public Stacked;
 
     mapping(uint256 => uint256) public dailyTax;
-    uint256 lastUnstackday = block.timestamp;
 
     uint256 public stackingRate;
 
@@ -105,6 +104,7 @@ contract DEX is Pausable, Ownable {
     }
 
     function _removeArr(uint256 index) internal {
+        require(index < Stacked[msg.sender].length, "Index out of bounds");
         for (uint256 i = index; i < Stacked[msg.sender].length - 1; i++) {
             Stacked[msg.sender][i] = Stacked[msg.sender][i + 1];
         }
@@ -122,6 +122,35 @@ contract DEX is Pausable, Ownable {
             }
         }
         return taxShare;
+    }
+
+    function getMemePrice(uint256 meme_amount) public view returns(uint256){
+        uint256 dx = _x + meme_amount;
+        uint256 dy = _k / dx;
+
+        return _y - dy;
+    }
+    function getETHPrice(uint256 meme_amount) public view returns(uint256){
+        uint256 dx = _x - meme_amount;
+        uint256 dy = _k / dx;
+
+        return _y - dy;
+    }
+    
+    function _buy(uint128 meme_amount) public payable {
+        require(meme_amount > 0, "Send Some Meme");
+        uint256 meme_price = getMemePrice(meme_amount);
+        require(meme_price < msg.value , "Send More ETH");
+
+        meme.transfer(msg.sender , meme_amount);
+        payable(msg.sender).transfer(msg.value - meme_price);
+    }
+
+    function _sell(uint128 meme_amount) public {
+        require(meme_amount > 0, "Send Some Meme");
+        uint256 eth_amount = getETHPrice(meme_amount);
+        meme.transferFrom(msg.sender, address(this), meme_amount);
+        payable(msg.sender).transfer(eth_amount);
     }
 
     // function secondsToDays(uint256 second) public pure returns (uint256) {
