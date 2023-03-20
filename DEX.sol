@@ -137,7 +137,7 @@ contract DEX is Pausable, Ownable {
         return _y - dy;
     }
     
-    function _buy(uint128 meme_amount) public payable {
+    function _buy(uint256 meme_amount) public payable {
         require(meme_amount > 0, "Send Some Meme");
         uint256 meme_price = getMemePrice(meme_amount);
         require(meme_price < msg.value , "Send More ETH");
@@ -146,7 +146,7 @@ contract DEX is Pausable, Ownable {
         payable(msg.sender).transfer(msg.value - meme_price);
     }
 
-    function _sell(uint128 meme_amount) public {
+    function _sell(uint256 meme_amount) public {
         require(meme_amount > 0, "Send Some Meme");
         uint256 eth_amount = getETHPrice(meme_amount);
         meme.transferFrom(msg.sender, address(this), meme_amount);
