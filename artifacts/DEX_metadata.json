@@ -22,6 +22,31 @@
 					{
 						"indexed": true,
 						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "Meme_amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "eth_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "Buy",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
 						"name": "previousOwner",
 						"type": "address"
 					},
@@ -52,6 +77,81 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "Meme_amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "eth_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "Sell",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "Meme_amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "eth_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "Stack",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "Meme_amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "eth_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "UnStack",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": false,
 						"internalType": "address",
 						"name": "account",
@@ -60,53 +160,6 @@
 				],
 				"name": "Unpaused",
 				"type": "event"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "Stacked",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "meme_amount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "eth_amount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "time",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "meme_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "_buy",
-				"outputs": [],
-				"stateMutability": "payable",
-				"type": "function"
 			},
 			{
 				"inputs": [],
@@ -119,19 +172,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "meme_amount",
-						"type": "uint256"
-					}
-				],
-				"name": "_sell",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -164,6 +204,19 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
+						"name": "meme_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "buy",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
 					}
@@ -183,7 +236,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "meme_amount",
+						"name": "eth_amount",
 						"type": "uint256"
 					}
 				],
@@ -212,6 +265,36 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getStacks",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "meme_amount",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "eth_amount",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "time",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct Stack_Struct[]",
+						"name": "",
+						"type": "tuple[]"
 					}
 				],
 				"stateMutability": "view",
@@ -266,6 +349,19 @@
 			{
 				"inputs": [],
 				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "eth_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "sell",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -385,7 +481,7 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": false,
+			"enabled": true,
 			"runs": 200
 		},
 		"remappings": []
@@ -448,11 +544,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0xc3d60512e8a996dfacd61d65c520078ef7ad5313d50b7b5e65d6c7ea96124889",
+			"keccak256": "0x7cd25a3307bef4c3e497d52cdd926f4f134d3be6a18c953ae818f5096109b844",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://f93f993157d6d4a0faacb3466bbf7e3f3ab66593142a2135ab567b37d2aeacc0",
-				"dweb:/ipfs/QmRcoavbpGbGqET4FZPuvpdzuoYMqgjaHAEko7KiEQuW4F"
+				"bzz-raw://704c4733070ca44b3c552d85423601965c3fc487600d0e40a28a447f312901fb",
+				"dweb:/ipfs/QmXKdHohWmgqx47RB1ogtK26KqWUjG9sq4bM8oXnc452u9"
 			]
 		},
 		"MEME.sol": {
