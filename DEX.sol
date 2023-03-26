@@ -142,6 +142,7 @@ contract DEX is Pausable, Ownable {
     }
 
     function getMemePrice(uint256 meme_amount) public view returns (uint256) {
+        require(_k > 0 , "Not enough liquidity");
         uint256 dx = (_x + meme_amount);
         uint256 dy = (_k / dx);
 

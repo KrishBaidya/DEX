@@ -544,11 +544,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0x7cd25a3307bef4c3e497d52cdd926f4f134d3be6a18c953ae818f5096109b844",
+			"keccak256": "0xde10c0e8b7ae10334a77356a9799b33315ab78fcdf3589495d97d9164aa29153",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://704c4733070ca44b3c552d85423601965c3fc487600d0e40a28a447f312901fb",
-				"dweb:/ipfs/QmXKdHohWmgqx47RB1ogtK26KqWUjG9sq4bM8oXnc452u9"
+				"bzz-raw://c05b480c929b0bbfb50346654de502a468afc82beaba9571f74775d3dc1c1ebe",
+				"dweb:/ipfs/QmX5wYKkBYJLMc7M8ivcdyNPJFUas9shSdPJtSP3rZMcrt"
 			]
 		},
 		"MEME.sol": {
