@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "MEME.sol";
 
-struct Stack_Struct {
-    uint256 meme_amount;
-    uint256 eth_amount;
-    uint256 time;
-}
-
 contract DEX is Pausable, Ownable {
+    struct Stack_Struct {
+        uint256 meme_amount;
+        uint256 eth_amount;
+        uint256 time;
+    }
     ERC20 meme;
 
     event Buy(address indexed from, uint256 Meme_amount, uint256 eth_amount);
@@ -56,8 +55,12 @@ contract DEX is Pausable, Ownable {
         _k = _x * _y;
     }
 
-    function getStacks() public view returns (Stack_Struct[] memory) {
-        return Stacked[msg.sender];
+    function getStacks(address addr)
+        public
+        view
+        returns (Stack_Struct[] memory)
+    {
+        return Stacked[addr];
     }
 
     function stack(uint256 meme_amount) public payable {
@@ -100,6 +103,15 @@ contract DEX is Pausable, Ownable {
         uint256 meme_to_return = ss.meme_amount;
         uint256 eth_to_return = ss.eth_amount + tax;
 
+        require(
+            meme.balanceOf(address(this)) > ss.meme_amount,
+            "Sorry Currently this contract doesn't have Meme to return, Check back Soon!"
+        );
+        require(
+            address(this).balance > ss.meme_amount,
+            "Sorry Currently this contract doesn't have Eth to return, Check back Soon!"
+        );
+
         _x -= meme_to_return;
         _y -= eth_to_return;
 
@@ -129,12 +141,22 @@ contract DEX is Pausable, Ownable {
     function _distributeTax() internal view returns (uint256) {
         uint256 taxShare = 0;
         if (dailyTax[block.timestamp / 1 days] > 0) {
-            uint256 numStacks = Stacked[msg.sender].length;
+            Stack_Struct[] storage stacks = Stacked[msg.sender];
+            uint256 numStacks = stacks.length;
+            uint256 totalStackTime = 0;
             for (uint256 i = 0; i < numStacks; i++) {
-                Stack_Struct memory ss = Stacked[msg.sender][i];
+                Stack_Struct memory ss = stacks[i];
+                totalStackTime += (block.timestamp - ss.time);
+            }
+            for (uint256 i = 0; i < numStacks; i++) {
+                Stack_Struct memory ss = stacks[i];
                 uint256 poolShare = ((ss.meme_amount * precision) / _x);
+                uint256 stackTime = (block.timestamp - ss.time);
+                uint256 stackWeight = stackTime / totalStackTime;
                 taxShare +=
-                    (poolShare * dailyTax[block.timestamp / 1 days]) /
+                    (poolShare *
+                        dailyTax[block.timestamp / 1 days] *
+                        stackWeight) /
                     _k;
             }
         }
@@ -142,7 +164,7 @@ contract DEX is Pausable, Ownable {
     }
 
     function getMemePrice(uint256 meme_amount) public view returns (uint256) {
-        require(_k > 0 , "Not enough liquidity");
+        require(_k > 0, "Not enough liquidity");
         uint256 dx = (_x + meme_amount);
         uint256 dy = (_k / dx);
 
