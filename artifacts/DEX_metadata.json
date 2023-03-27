@@ -271,13 +271,7 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "addr",
-						"type": "address"
-					}
-				],
+				"inputs": [],
 				"name": "getStacks",
 				"outputs": [
 					{
@@ -550,11 +544,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0x6359632f522e4b37e39c07f0855616251a6500e9a192f242ec085396cdee9e95",
+			"keccak256": "0x12d6cc7d37c5bfc0a60e547b3f97653adf2af1ddfc6ec3ef69ddd50ed042b5f9",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://39a52bcb7da503a28e614b57faaae0015b27d2c9d57c74e778baf5926ad3be40",
-				"dweb:/ipfs/Qmf2AwAuV8VXvLx2MmHMvP5xhV8DbRatv9quHSHZHJvxxD"
+				"bzz-raw://e46c43f03e7554c8a1e667e520b5269c37ca643fb72387f39f47988598cb3c9a",
+				"dweb:/ipfs/QmNiPVwwrHCF6BE3VTq9KHEMV6oa7aR3kmqiAtpqHWdADs"
 			]
 		},
 		"MEME.sol": {

@@ -55,12 +55,12 @@ contract DEX is Pausable, Ownable {
         _k = _x * _y;
     }
 
-    function getStacks(address addr)
+    function getStacks()
         public
         view
         returns (Stack_Struct[] memory)
     {
-        return Stacked[addr];
+        return Stacked[msg.sender];
     }
 
     function stack(uint256 meme_amount) public payable {
@@ -104,11 +104,11 @@ contract DEX is Pausable, Ownable {
         uint256 eth_to_return = ss.eth_amount + tax;
 
         require(
-            meme.balanceOf(address(this)) > ss.meme_amount,
+            meme.balanceOf(address(this)) >= meme_to_return,
             "Sorry Currently this contract doesn't have Meme to return, Check back Soon!"
         );
         require(
-            address(this).balance > ss.meme_amount,
+            address(this).balance >= eth_to_return,
             "Sorry Currently this contract doesn't have Eth to return, Check back Soon!"
         );
 
@@ -172,11 +172,12 @@ contract DEX is Pausable, Ownable {
     }
 
     function getETHPrice(uint256 eth_amount) public view returns (uint256) {
+        require(_k > 0, "Not enough liquidity");
         uint256 dy = (_y + eth_amount);
         uint256 dx = (_k / dy);
-        uint256 meme_price_without_tax = ((_x - dx) * precision) / dy;
+        uint256 meme_price_without_tax = _x - dx;
 
-        uint256 meme_tax = (meme_price_without_tax * taxRate) / precision;
+        uint256 meme_tax = (meme_price_without_tax * (precision + taxRate)) / precision;
 
         uint256 meme_price_with_tax = meme_price_without_tax - meme_tax;
 
