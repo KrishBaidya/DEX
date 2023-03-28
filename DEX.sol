@@ -177,7 +177,7 @@ contract DEX is Pausable, Ownable {
         uint256 dx = (_k / dy);
         uint256 meme_price_without_tax = _x - dx;
 
-        uint256 meme_tax = (meme_price_without_tax * (precision + taxRate)) / precision;
+        uint256 meme_tax = (meme_price_without_tax * taxRate) / precision;
 
         uint256 meme_price_with_tax = meme_price_without_tax - meme_tax;
 
