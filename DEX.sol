@@ -55,11 +55,7 @@ contract DEX is Pausable, Ownable {
         _k = _x * _y;
     }
 
-    function getStacks()
-        public
-        view
-        returns (Stack_Struct[] memory)
-    {
+    function getStacks() public view returns (Stack_Struct[] memory) {
         return Stacked[msg.sender];
     }
 
@@ -165,18 +161,40 @@ contract DEX is Pausable, Ownable {
 
     function getMemePrice(uint256 meme_amount) public view returns (uint256) {
         require(_k > 0, "Not enough liquidity");
-        uint256 dx = (_x + meme_amount);
-        uint256 dy = (_k / dx);
+        uint256 dx = 0;
+        uint256 dy = 0;
+        if (_y == 0) {
+            dx = _k / 1 - meme_amount;
+        } else {
+            dx = _k / _y - meme_amount;
+        }
+        if (dx == 0) {
+            dy = _k / 1;
+        } else {
+            dy = _k / dx;
+        }
+        uint256 eth_price_without_tax = dy - _y;
+        uint256 eth_tax = (eth_price_without_tax * taxRate) / precision;
 
-        return ((_y - dy) * (precision + taxRate)) / precision + 1;
+        uint256 eth_price_with_tax = eth_price_without_tax + eth_tax;
+        return eth_price_with_tax;
     }
 
     function getETHPrice(uint256 eth_amount) public view returns (uint256) {
         require(_k > 0, "Not enough liquidity");
-        uint256 dy = (_y + eth_amount);
-        uint256 dx = (_k / dy);
-        uint256 meme_price_without_tax = _x - dx;
-
+        uint256 dx = 0;
+        uint256 dy = 0;
+        if (_x == 0) {
+            dy = _k / 1 - eth_amount;
+        } else {
+            dy = _k / _x - eth_amount;
+        }
+        if (dy == 0) {
+            dx = _k / 1;
+        } else {
+            dx = _k / dy;
+        }
+        uint256 meme_price_without_tax = dx - _x;
         uint256 meme_tax = (meme_price_without_tax * taxRate) / precision;
 
         uint256 meme_price_with_tax = meme_price_without_tax - meme_tax;
@@ -187,7 +205,7 @@ contract DEX is Pausable, Ownable {
     function buy(uint256 meme_amount) public payable {
         require(meme_amount > 0, "Send Some Meme");
         uint256 meme_price = getMemePrice(meme_amount);
-        require(meme_price < msg.value, "Send More ETH");
+        require(meme_price <= msg.value, "Send More ETH");
 
         meme.transfer(msg.sender, meme_amount);
         payable(msg.sender).transfer(msg.value - meme_price);
@@ -195,6 +213,9 @@ contract DEX is Pausable, Ownable {
         dailyTax[block.timestamp / 1 days] +=
             (meme_amount * (precision + taxRate)) /
             precision;
+
+        _x -= meme_amount;
+        _y = (_k / _x);
 
         emit Buy(msg.sender, meme_amount, meme_price);
     }
@@ -209,6 +230,10 @@ contract DEX is Pausable, Ownable {
         dailyTax[block.timestamp / 1 days] +=
             (meme_amount * (precision + taxRate)) /
             precision;
+
+        _x += meme_amount;
+        _y = (_k / _x);
+
         emit Sell(msg.sender, meme_amount, eth_amount);
     }
 
