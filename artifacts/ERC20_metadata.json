@@ -351,7 +351,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"DEX.sol_flattened.sol": "ERC20"
+			"MEME.sol_flattened.sol": "ERC20"
 		},
 		"evmVersion": "paris",
 		"libraries": {},
@@ -359,17 +359,17 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": false,
+			"enabled": true,
 			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
-		"DEX.sol_flattened.sol": {
-			"keccak256": "0xf7e2b72abf5ae8460fb5252305585ac5a0129c78d0e24ee4c71bfd4b21e0cebc",
+		"MEME.sol_flattened.sol": {
+			"keccak256": "0x2515d61e9b62463d89635b35bb7323139a3798ad857075e49307b34f4790cdc2",
 			"urls": [
-				"bzz-raw://0071210576290a9ec7be88d4b471859493b63b3ed155fd1f15c1f23c5cc1cb79",
-				"dweb:/ipfs/QmYc6NfBiGvdSqn7dH7AiHcmA4KUsWfziSnLPzEBR3jpao"
+				"bzz-raw://4cae07b8c4e34085042a282c02fc73945cbf7a6e58f20d5fbbb72f4804d423b3",
+				"dweb:/ipfs/QmcqWZgAU9tUPoaQc282HcYAmWqRvipnEN2XeQhV7D2Uyc"
 			]
 		}
 	},

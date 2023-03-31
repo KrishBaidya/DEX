@@ -25,17 +25,17 @@ contract DEX is Pausable, Ownable {
 
     mapping(address => Stack_Struct[]) internal Stacked;
 
-    mapping(uint256 => uint256) public dailyTax;
+    mapping(uint256 => uint256) internal dailyTax;
 
-    uint256 public stackingRate;
+    uint256 internal stackingRate;
 
-    uint256 public _k;
-    uint256 public _x;
-    uint256 public _y;
+    uint256 internal _k;
+    uint256 internal _x;
+    uint256 internal _y;
 
-    uint256 public precision = 10e18;
+    uint256 internal precision = 10e18;
 
-    uint256 public taxRate = (3 * precision) / 10;
+    uint256 internal taxRate = (3 * precision) / 10;
 
     constructor(address addr) {
         meme = MEME(addr);
@@ -59,7 +59,7 @@ contract DEX is Pausable, Ownable {
         return Stacked[msg.sender];
     }
 
-    function stack(uint256 meme_amount) public payable {
+    function stack(uint256 meme_amount) public payable whenNotPaused{
         require(meme_amount > 0, "Send more MEME");
         require(msg.value > 0, "Send more ETH");
         require(
@@ -69,7 +69,7 @@ contract DEX is Pausable, Ownable {
         _stack(meme_amount, msg.value);
     }
 
-    function unstack(uint256 index) public {
+    function unstack(uint256 index) public whenNotPaused{
         require(index >= 0, "Index can't be less then 0");
         _unstack(index);
     }
@@ -159,7 +159,7 @@ contract DEX is Pausable, Ownable {
         return taxShare;
     }
 
-    function getMemePrice(uint256 meme_amount) public view returns (uint256) {
+    function getMemePrice(uint256 meme_amount) public whenNotPaused view returns (uint256) {
         require(_k > 0, "Not enough liquidity");
         uint256 dx = 0;
         uint256 dy = 0;
@@ -180,7 +180,7 @@ contract DEX is Pausable, Ownable {
         return eth_price_with_tax;
     }
 
-    function getETHPrice(uint256 eth_amount) public view returns (uint256) {
+    function getETHPrice(uint256 eth_amount) public whenNotPaused view returns (uint256) {
         require(_k > 0, "Not enough liquidity");
         uint256 dx = 0;
         uint256 dy = 0;
@@ -202,7 +202,7 @@ contract DEX is Pausable, Ownable {
         return meme_price_with_tax;
     }
 
-    function buy(uint256 meme_amount) public payable {
+    function buy(uint256 meme_amount) public whenNotPaused payable {
         require(meme_amount > 0, "Send Some Meme");
         uint256 meme_price = getMemePrice(meme_amount);
         require(meme_price <= msg.value, "Send More ETH");
@@ -220,7 +220,7 @@ contract DEX is Pausable, Ownable {
         emit Buy(msg.sender, meme_amount, meme_price);
     }
 
-    function sell(uint256 eth_amount) public {
+    function sell(uint256 eth_amount) public whenNotPaused{
         require(eth_amount > 0, "Send Some ETH");
         uint256 eth_price = getETHPrice(eth_amount);
 
