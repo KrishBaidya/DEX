@@ -222,19 +222,20 @@ contract DEX is Pausable, Ownable {
 
     function sell(uint256 eth_amount) public {
         require(eth_amount > 0, "Send Some ETH");
-        uint256 meme_amount = getETHPrice(eth_amount);
+        uint256 eth_price = getETHPrice(eth_amount);
 
-        meme.transferFrom(msg.sender, address(this), meme_amount);
+        require(eth_price <= meme.balanceOf(msg.sender), "You don't have enough meme");
+        meme.transferFrom(msg.sender, address(this), eth_price);
         payable(msg.sender).transfer(eth_amount);
 
         dailyTax[block.timestamp / 1 days] +=
-            (meme_amount * (precision + taxRate)) /
+            (eth_price * (precision + taxRate)) /
             precision;
 
-        _x += meme_amount;
-        _y = (_k / _x);
+        _y -= eth_amount;
+        _x = (_k / _y);
 
-        emit Sell(msg.sender, meme_amount, eth_amount);
+        emit Sell(msg.sender, eth_price, eth_amount);
     }
 
     // function secondsToDays(uint256 second) public pure returns (uint256) {
