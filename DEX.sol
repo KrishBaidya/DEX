@@ -27,7 +27,7 @@ contract DEX is Pausable, Ownable {
 
     mapping(uint256 => uint256) internal dailyTax;
 
-    uint256 internal stackingRate;
+    uint256 public stackingRate;
 
     uint256 internal _k;
     uint256 internal _x;
@@ -94,6 +94,7 @@ contract DEX is Pausable, Ownable {
 
     function _unstack(uint256 index) internal {
         Stack_Struct memory ss = Stacked[msg.sender][index];
+
         uint256 tax = _distributeTax();
 
         uint256 meme_to_return = ss.meme_amount;
@@ -107,6 +108,7 @@ contract DEX is Pausable, Ownable {
             address(this).balance >= eth_to_return,
             "Sorry Currently this contract doesn't have Eth to return, Check back Soon!"
         );
+
 
         _x -= meme_to_return;
         _y -= eth_to_return;
@@ -140,11 +142,11 @@ contract DEX is Pausable, Ownable {
             Stack_Struct[] storage stacks = Stacked[msg.sender];
             uint256 numStacks = stacks.length;
             uint256 totalStackTime = 0;
-            for (uint256 i = 0; i < numStacks; i++) {
+            for (uint256 i = 0; i <= numStacks; i++) {
                 Stack_Struct memory ss = stacks[i];
                 totalStackTime += (block.timestamp - ss.time);
             }
-            for (uint256 i = 0; i < numStacks; i++) {
+            for (uint256 i = 0; i <= numStacks; i++) {
                 Stack_Struct memory ss = stacks[i];
                 uint256 poolShare = ((ss.meme_amount * precision) / _x);
                 uint256 stackTime = (block.timestamp - ss.time);
@@ -197,7 +199,7 @@ contract DEX is Pausable, Ownable {
         uint256 meme_price_without_tax = dx - _x;
         uint256 meme_tax = (meme_price_without_tax * taxRate) / precision;
 
-        uint256 meme_price_with_tax = meme_price_without_tax - meme_tax;
+        uint256 meme_price_with_tax = meme_price_without_tax + meme_tax;
 
         return meme_price_with_tax;
     }
