@@ -25,7 +25,7 @@ contract DEX is Pausable, Ownable {
 
     mapping(address => Stack_Struct[]) internal Stacked;
 
-    mapping(uint256 => uint256) internal dailyTax;
+    mapping(uint256 => uint256) public dailyTax;
 
     uint256 public stackingRate;
 
@@ -59,7 +59,7 @@ contract DEX is Pausable, Ownable {
         return Stacked[msg.sender];
     }
 
-    function stack(uint256 meme_amount) public payable whenNotPaused{
+    function stack(uint256 meme_amount) public payable whenNotPaused {
         require(meme_amount > 0, "Send more MEME");
         require(msg.value > 0, "Send more ETH");
         require(
@@ -69,8 +69,8 @@ contract DEX is Pausable, Ownable {
         _stack(meme_amount, msg.value);
     }
 
-    function unstack(uint256 index) public whenNotPaused{
-        require(index >= 0, "Index can't be less then 0");
+    function unstack(uint256 index) public whenNotPaused {
+        // require(index >= 0, "Index can't be less then 0");
         _unstack(index);
     }
 
@@ -88,33 +88,37 @@ contract DEX is Pausable, Ownable {
 
         stackingRate = ((_y * precision) / _x);
 
+        originalX = _x;
+
         _updateK();
         emit Stack(msg.sender, meme_amount, msg.value);
     }
 
+    uint256 internal originalX = _x;
+
     function _unstack(uint256 index) internal {
+        require(index < Stacked[msg.sender].length, "Index out of bounds");
+
         Stack_Struct memory ss = Stacked[msg.sender][index];
 
-        uint256 tax = _distributeTax();
-
+        uint256 tax = _distributeTax(index);
         uint256 meme_to_return = ss.meme_amount;
         uint256 eth_to_return = ss.eth_amount + tax;
+        originalX = _x;
 
         require(
-            meme.balanceOf(address(this)) >= meme_to_return,
+            meme_to_return <= meme.balanceOf(address(this)),
             "Sorry Currently this contract doesn't have Meme to return, Check back Soon!"
         );
         require(
-            address(this).balance >= eth_to_return,
+            eth_to_return <= address(this).balance,
             "Sorry Currently this contract doesn't have Eth to return, Check back Soon!"
         );
-
-
-        _x -= meme_to_return;
-        _y -= eth_to_return;
-
         meme.transfer(msg.sender, meme_to_return);
         payable(msg.sender).transfer(eth_to_return);
+
+        _x = (_x >= meme_to_return) ? (_x - meme_to_return) : 0;
+        _y = (_y >= eth_to_return) ? (_y - eth_to_return) : 0;
 
         if (_x == 0) {
             stackingRate = 0;
@@ -136,32 +140,83 @@ contract DEX is Pausable, Ownable {
         Stacked[msg.sender].pop();
     }
 
-    function _distributeTax() internal view returns (uint256) {
+    // function _distributeTax() internal view returns (uint256) {
+    //     uint256 taxShare = 0;
+    //     if (dailyTax[block.timestamp / 1 days] > 0) {
+    //         Stack_Struct[] storage stacks = Stacked[msg.sender];
+    //         uint256 numStacks = stacks.length;
+    //         uint256 totalStackTime = 0;
+    //         for (uint256 i = 0; i < numStacks; i++) {
+    //             Stack_Struct storage ss = stacks[i];
+    //             totalStackTime += (block.timestamp - ss.time);
+    //         }
+    //         for (uint256 i = 0; i < numStacks; i++) {
+    //             Stack_Struct storage ss = stacks[i];
+    //             uint256 poolShare = ((ss.meme_amount * precision) / _x);
+    //             uint256 stackTime = (block.timestamp - ss.time);
+    //             uint256 stackWeight = (totalStackTime + stackTime) /
+    //                 totalStackTime;
+    //             taxShare +=
+    //                 (poolShare *
+    //                     dailyTax[block.timestamp / 1 days] *
+    //                     stackWeight) /
+    //                 _k;
+    //             // taxShare += (poolShare * dailyTax[block.timestamp / 1 seconds]) / _k;
+    //         }
+    //     }
+    //     return taxShare;
+    // }
+
+    function _distributeTax(uint256 poolIndex) public view returns (uint256) {
         uint256 taxShare = 0;
         if (dailyTax[block.timestamp / 1 days] > 0) {
-            Stack_Struct[] storage stacks = Stacked[msg.sender];
-            uint256 numStacks = stacks.length;
-            uint256 totalStackTime = 0;
-            for (uint256 i = 0; i <= numStacks; i++) {
-                Stack_Struct memory ss = stacks[i];
-                totalStackTime += (block.timestamp - ss.time);
-            }
-            for (uint256 i = 0; i <= numStacks; i++) {
-                Stack_Struct memory ss = stacks[i];
-                uint256 poolShare = ((ss.meme_amount * precision) / _x);
-                uint256 stackTime = (block.timestamp - ss.time);
-                uint256 stackWeight = stackTime / totalStackTime;
-                taxShare +=
-                    (poolShare *
-                        dailyTax[block.timestamp / 1 days] *
-                        stackWeight) /
-                    _k;
+            Stack_Struct[] memory stacks = Stacked[msg.sender];
+            require(poolIndex < stacks.length, "Invalid pool index");
+
+            Stack_Struct memory ss = stacks[poolIndex];
+            uint256 poolShare = (ss.meme_amount * precision) / originalX;
+
+            uint256 creationTime = ss.time;
+            uint256 currentDay = block.timestamp / 1 days;
+
+            for (
+                uint256 day = creationTime / 1 days;
+                day <= currentDay;
+                day++
+            ) {
+                taxShare += (poolShare * dailyTax[day]) / precision;
             }
         }
         return taxShare;
     }
 
-    function getMemePrice(uint256 meme_amount) public whenNotPaused view returns (uint256) {
+    // function _distributeTax() public view returns (uint256) {
+    //     uint256 taxShare = 0;
+    //     if (dailyTax[block.timestamp / 1 days] > 0) {
+    //         Stack_Struct[] storage stacks = Stacked[msg.sender];
+    //         uint256 numStacks = stacks.length;
+
+    //         // Step 2: Calculate the tax share for each stack and accumulate the total tax share
+    //         for (uint256 i = 0; i < numStacks; i++) {
+    //             Stack_Struct storage ss = stacks[i];
+    //             uint256 poolShare = (ss.meme_amount * precision) / _x;
+    //             uint256 stackTime = block.timestamp - ss.time;
+    //             // uint256 stackWeight = ((stackTime + totalStackTime) * precision) /
+    //             //     totalStackTime;
+    //             taxShare +=
+    //                 (ss.meme_amount * dailyTax[block.timestamp / 1 days]) /
+    //                 _k;
+    //         }
+    //     }
+    //     return taxShare;
+    // }
+
+    function getMemePrice(uint256 meme_amount)
+        public
+        view
+        whenNotPaused
+        returns (uint256)
+    {
         require(_k > 0, "Not enough liquidity");
         uint256 dx = 0;
         uint256 dy = 0;
@@ -182,7 +237,32 @@ contract DEX is Pausable, Ownable {
         return eth_price_with_tax;
     }
 
-    function getETHPrice(uint256 eth_amount) public whenNotPaused view returns (uint256) {
+    function calculateTax(uint256 meme_amount) internal view returns (uint256) {
+        require(_k > 0, "Not enough liquidity");
+        uint256 dx = 0;
+        uint256 dy = 0;
+        if (_y == 0) {
+            dx = _k / 1 - meme_amount;
+        } else {
+            dx = _k / _y - meme_amount;
+        }
+        if (dx == 0) {
+            dy = _k / 1;
+        } else {
+            dy = _k / dx;
+        }
+        uint256 eth_price_without_tax = dy - _y;
+        uint256 eth_tax = (eth_price_without_tax * taxRate) / precision;
+
+        return eth_tax;
+    }
+
+    function getETHPrice(uint256 eth_amount)
+        public
+        view
+        whenNotPaused
+        returns (uint256)
+    {
         require(_k > 0, "Not enough liquidity");
         uint256 dx = 0;
         uint256 dy = 0;
@@ -199,12 +279,13 @@ contract DEX is Pausable, Ownable {
         uint256 meme_price_without_tax = dx - _x;
         uint256 meme_tax = (meme_price_without_tax * taxRate) / precision;
 
-        uint256 meme_price_with_tax = meme_price_without_tax + meme_tax;
+        // uint256 meme_price_with_tax = meme_price_without_tax - meme_tax;
+        uint256 meme_price_with_tax = meme_price_without_tax;
 
         return meme_price_with_tax;
     }
 
-    function buy(uint256 meme_amount) public whenNotPaused payable {
+    function buy(uint256 meme_amount) public payable whenNotPaused {
         require(meme_amount > 0, "Send Some Meme");
         uint256 meme_price = getMemePrice(meme_amount);
         require(meme_price <= msg.value, "Send More ETH");
@@ -212,9 +293,7 @@ contract DEX is Pausable, Ownable {
         meme.transfer(msg.sender, meme_amount);
         payable(msg.sender).transfer(msg.value - meme_price);
 
-        dailyTax[block.timestamp / 1 days] +=
-            (meme_amount * (precision + taxRate)) /
-            precision;
+        dailyTax[block.timestamp / 1 days] += calculateTax(meme_amount);
 
         _x -= meme_amount;
         _y = (_k / _x);
@@ -222,17 +301,20 @@ contract DEX is Pausable, Ownable {
         emit Buy(msg.sender, meme_amount, meme_price);
     }
 
-    function sell(uint256 eth_amount) public whenNotPaused{
+    function sell(uint256 eth_amount) public whenNotPaused {
         require(eth_amount > 0, "Send Some ETH");
         uint256 eth_price = getETHPrice(eth_amount);
 
-        require(eth_price <= meme.balanceOf(msg.sender), "You don't have enough meme");
+        require(
+            eth_price <= meme.balanceOf(msg.sender),
+            "You don't have enough meme"
+        );
         meme.transferFrom(msg.sender, address(this), eth_price);
         payable(msg.sender).transfer(eth_amount);
 
-        dailyTax[block.timestamp / 1 days] +=
-            (eth_price * (precision + taxRate)) /
-            precision;
+        // dailyTax[block.timestamp / 1 days] +=
+        //     (eth_price * (precision + taxRate)) /
+        //     precision;
 
         _y -= eth_amount;
         _x = (_k / _y);
