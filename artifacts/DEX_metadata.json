@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.20+commit.a1b79de6"
+		"version": "0.8.19+commit.7dd6d404"
 	},
 	"language": "Solidity",
 	"output": {
@@ -11,6 +11,11 @@
 						"internalType": "address",
 						"name": "addr",
 						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_taxrate",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -165,6 +170,48 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
+						"name": "poolIndex",
+						"type": "uint256"
+					}
+				],
+				"name": "_distributeTax",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "meme_amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "ownerAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "msgValue",
+						"type": "uint256"
+					}
+				],
+				"name": "buy",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
 						"name": "meme_amount",
 						"type": "uint256"
 					}
@@ -172,6 +219,25 @@
 				"name": "buy",
 				"outputs": [],
 				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "dailyTax",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -288,6 +354,24 @@
 						"internalType": "uint256",
 						"name": "eth_amount",
 						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "ownerAddress",
+						"type": "address"
+					}
+				],
+				"name": "sell",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "eth_amount",
+						"type": "uint256"
 					}
 				],
 				"name": "sell",
@@ -353,6 +437,10 @@
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
+			},
+			{
+				"stateMutability": "payable",
+				"type": "receive"
 			}
 		],
 		"devdoc": {
@@ -391,7 +479,7 @@
 		"compilationTarget": {
 			"DEX.sol": "DEX"
 		},
-		"evmVersion": "shanghai",
+		"evmVersion": "paris",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -460,11 +548,11 @@
 			]
 		},
 		"DEX.sol": {
-			"keccak256": "0x20d15b6723398c5bf524300fa3e0a4cc954432e8b9b8ef3a1dc96b829e5edcfb",
+			"keccak256": "0xb2617b0c9710b75f71497d338eb8c3d35e60e412fbe1de4955314a744329992e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d2e3aae4d0f8d8f1db1688f9d8722188b8e940f63fce94009475ba82b5265b59",
-				"dweb:/ipfs/QmVUe6k7bVWDwTTLcuX3fP6T8pyycDR6jdnyMbR8PxbAiA"
+				"bzz-raw://8846f94ae0e2f609ca3e66ab8bd6ad293768cf3493732ddb6306913fc4c57069",
+				"dweb:/ipfs/QmfBKnLsRUxVtPFB9rrsM4v2PCnMmi2mvgFGtWvqTTqfTT"
 			]
 		},
 		"MEME.sol": {

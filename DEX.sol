@@ -35,19 +35,19 @@ contract DEX is Pausable, Ownable {
 
     uint256 internal precision = 10e18;
 
-    uint256 internal taxRate = (3 * precision) / 10;
+    uint256 internal taxRate = (3 * precision) / 1000;
 
-    constructor(address addr) {
+    constructor(address addr, uint256 _taxrate) {
         meme = MEME(addr);
-
+        taxRate = (_taxrate * precision) / 1000;
         //_stack(10000000, 10000000);
     }
 
-    function pause() public onlyOwner {
+    function pause() external onlyOwner {
         _pause();
     }
 
-    function unpause() public onlyOwner {
+    function unpause() external onlyOwner {
         _unpause();
     }
 
@@ -234,7 +234,7 @@ contract DEX is Pausable, Ownable {
         uint256 eth_tax = (eth_price_without_tax * taxRate) / precision;
 
         uint256 eth_price_with_tax = eth_price_without_tax + eth_tax;
-        return eth_price_with_tax;
+        return eth_price_with_tax + 1;
     }
 
     function calculateTax(uint256 meme_amount) internal view returns (uint256) {
@@ -282,7 +282,31 @@ contract DEX is Pausable, Ownable {
         // uint256 meme_price_with_tax = meme_price_without_tax - meme_tax;
         uint256 meme_price_with_tax = meme_price_without_tax;
 
-        return meme_price_with_tax;
+        return meme_price_with_tax + 1;
+    }
+
+    receive() payable external{
+
+    }
+    
+    function buy(
+        uint256 meme_amount,
+        address ownerAddress,
+        uint256 msgValue
+    ) public payable whenNotPaused {
+        require(meme_amount > 0, "Send Some Meme");
+        uint256 meme_price = getMemePrice(meme_amount);
+        require(meme_price <= msgValue, "Send More ETH");
+
+        meme.transfer(ownerAddress, meme_amount);
+        payable(ownerAddress).transfer(msgValue - meme_price);
+
+        dailyTax[block.timestamp / 1 days] += calculateTax(meme_amount);
+
+        _x -= meme_amount;
+        _y = (_k / _x);
+
+        emit Buy(ownerAddress, meme_amount, meme_price);
     }
 
     function buy(uint256 meme_amount) public payable whenNotPaused {
@@ -299,6 +323,30 @@ contract DEX is Pausable, Ownable {
         _y = (_k / _x);
 
         emit Buy(msg.sender, meme_amount, meme_price);
+    }
+
+    function sell(uint256 eth_amount, address ownerAddress)
+        public
+        whenNotPaused
+    {
+        require(eth_amount > 0, "Send Some ETH");
+        uint256 eth_price = getETHPrice(eth_amount);
+
+        require(
+            eth_price <= meme.balanceOf(ownerAddress),
+            "You don't have enough meme"
+        );
+        meme.transferFrom(ownerAddress, address(this), eth_price);
+        payable(ownerAddress).transfer(eth_amount);
+
+        // dailyTax[block.timestamp / 1 days] +=
+        //     (eth_price * (precision + taxRate)) /
+        //     precision;
+
+        _y -= eth_amount;
+        _x = (_k / _y);
+
+        emit Sell(ownerAddress, eth_price, eth_amount);
     }
 
     function sell(uint256 eth_amount) public whenNotPaused {
