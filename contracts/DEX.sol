@@ -8,6 +8,8 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./MEME.sol";
 
+import "hardhat/console.sol";
+
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 using SafeERC20 for IERC20;
@@ -201,18 +203,17 @@ contract DEX is Pausable, Ownable {
         uint256 meme_amount
     ) public view whenNotPaused returns (uint256) {
         require(_k > 0, "Not enough liquidity");
-        uint256 dx = 0;
-        uint256 dy = 0;
-        if (_y == 0) {
-            dx = _k / 1 - meme_amount;
-        } else {
-            dx = _k / _y - meme_amount;
-        }
-        if (dx == 0) {
-            dy = _k / 1;
-        } else {
-            dy = _k / dx;
-        }
+        require(_y > 0, "Not enough ETH liquidity"); // Check for zero liquidity
+
+        uint256 dx = _k / _y; // Calculate dy based on the liquidity pool state
+        require(
+            dx > meme_amount,
+            "Insufficient liquidity for this MEME amount"
+        ); // Ensure dx is greater than meme_amount
+        dx = dx - meme_amount;
+
+        uint256 dy = _k / dx;
+
         uint256 eth_price_without_tax = dy - _y;
         uint256 eth_tax = (eth_price_without_tax * taxRate) / precision;
 
@@ -244,25 +245,21 @@ contract DEX is Pausable, Ownable {
         uint256 eth_amount
     ) public view whenNotPaused returns (uint256) {
         require(_k > 0, "Not enough liquidity");
-        uint256 dx = 0;
-        uint256 dy = 0;
-        if (_x == 0) {
-            dy = _k / 1 - eth_amount;
-        } else {
-            dy = _k / _x - eth_amount;
-        }
-        if (dy == 0) {
-            dx = _k / 1;
-        } else {
-            dx = _k / dy;
-        }
+        require(_x > 0, "Not enough MEME liquidity");
+
+        uint256 dy = _k / _x; // Calculate dy based on the liquidity pool state
+        require(dy > eth_amount, "Insufficient liquidity for this ETH amount"); // Ensure dy is greater than eth_amount
+
+        dy = dy - eth_amount; // Subtract eth_amount from dy, ensuring it's still positive
+
+        uint256 dx = _k / dy; // Calculate dx from the new dy
+
         uint256 meme_price_without_tax = dx - _x;
         uint256 meme_tax = (meme_price_without_tax * taxRate) / precision;
 
         uint256 meme_price_with_tax = meme_price_without_tax >= meme_tax
             ? meme_price_without_tax - meme_tax
             : 0;
-        // uint256 meme_price_with_tax = meme_price_without_tax;
 
         return meme_price_with_tax;
     }
@@ -305,7 +302,13 @@ contract DEX is Pausable, Ownable {
 
         // Ensure the sender has approved enough MEME tokens for the DEX contract to transfer
         uint256 allowance = meme.allowance(user, address(this));
-        require(allowance >= eth_price, string.concat("You don't have enough meme approved ", Strings.toString(eth_price)));
+        require(
+            allowance >= eth_price,
+            string.concat(
+                "You don't have enough meme approved ",
+                Strings.toString(eth_price)
+            )
+        );
 
         // Adjust the state variables for the DEX (e.g., liquidity pool)
         _y -= eth_amount;

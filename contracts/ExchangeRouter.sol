@@ -75,12 +75,21 @@ contract ExchangeRouter is Pausable, Ownable {
         DEX dexA = getDex(tokenA);
         DEX dexB = getDex(tokenB);
 
-        // Sell tokenA for ETH
-        uint256 ethAmount = dexA.getMemePrice(memeAmount);
-        dexA.sell(msg.sender, ethAmount);
+        // Sell tokenA (MEME) for ETH
+        uint256 ethAmount = dexA.getETHPrice(memeAmount); // Get the amount of ETH for selling MEME
+        console.log("ETH Amount from selling MEME:", ethAmount);
 
-        // Use ETH to buy tokenB
-        dexB.buy{value: msg.value}(msg.sender, memeAmount);
+        // Sell MEME for ETH in dexA
+        dexA.sell(msg.sender, memeAmount); // Corrected to pass memeAmount to sell
+
+        // Withdraw ETH from dexA to the user
+        dexA.withdraw(msg.sender); // Manually withdraw the ETH to msg.sender
+
+        // Now msg.sender has the ETH in their wallet, send it to dexB to buy tokenB
+        console.log("Sending ETH to buy MEME B:", ethAmount);
+
+        // Approve the ETH amount to dexB
+        dexB.buy{value: ethAmount}(msg.sender, memeAmount); // Use ethAmount to buy tokenB from dexB
     }
 
     /**
@@ -99,10 +108,7 @@ contract ExchangeRouter is Pausable, Ownable {
      * @dev Allows users to unstack MEME and ETH from the respective DEX.
      * Calls the `unstack` function in the respective DEX.
      */
-    function unstack(
-        address tokenAddress,
-        uint256 index
-    ) public whenNotPaused {
+    function unstack(address tokenAddress, uint256 index) public whenNotPaused {
         DEX dex = getDex(tokenAddress);
         dex.unstack(index);
     }

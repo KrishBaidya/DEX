@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("DEX Contract", function () {
-    let DEX, dex, MEME, meme, owner, addr1, addr2;
+    let DEX, dex, MEME, meme, owner, addr1, addr2, precision;
 
     beforeEach(async function () {
         [owner, addr1, addr2] = await ethers.getSigners();
@@ -98,11 +98,56 @@ describe("DEX Contract", function () {
             console.log("After Unstack Eth Balance: " + afterUnstackEthBalance.toString());
 
             expect(afterUnstackMemeBalance).to.equal(beforeUnstackMemeBalance + memeAmount);
-            expect(afterUnstackEthBalance).to.equal(beforeUnstackEthBalance + ethAmount -gasCost);
+            expect(afterUnstackEthBalance).to.equal(beforeUnstackEthBalance + ethAmount - gasCost);
         });
 
         it("Should fail to unstack if index is out of bounds", async function () {
             await expect(dex.connect(addr1).unstack(1)).to.be.revertedWith("Index out of bounds");
+        });
+    });
+
+    describe("Price Calculation Functions", function () {
+        beforeEach(async function () {
+            // Add liquidity to the DEX before each test
+            const memeAmount = ethers.parseEther("100"); // Adjust according to your tests
+            const ethAmount = ethers.parseEther("1"); // Adjust according to your tests
+
+            // Approve the DEX to spend MEME tokens on behalf of addr1
+            await meme.connect(addr1).approve(await dex.getAddress(), memeAmount);
+
+            // Stack MEME and ETH into the DEX (add liquidity)
+            await dex.connect(addr1).stack(memeAmount, { value: ethAmount });
+        });
+
+        it("Should calculate the correct ETH price for MEME tokens", async function () {
+            const memeAmount = ethers.parseEther("0.5");
+            const ethPrice = await dex.getETHPrice(memeAmount);
+
+            // Log the calculated ETH price for debugging
+            console.log("Calculated ETH Price:", ethPrice.toString());
+
+            // Ensure the calculated ETH price is greater than zero
+            expect(ethPrice).to.be.gt(0);
+        });
+
+        it("Should calculate the correct MEME price for ETH", async function () {
+            const ethAmount = ethers.parseEther("0.5");
+            const memePrice = await dex.getMemePrice(ethAmount);
+
+            // Log the calculated MEME price for debugging
+            console.log("Calculated MEME Price:", memePrice.toString());
+
+            // Ensure the calculated MEME price is greater than zero
+            expect(memePrice).to.be.gt(0);
+        });
+
+        it("Should revert if liquidity is insufficient", async function () {
+            console.log(ethers.parseEther("1000"))
+            // Try getting ETH price for MEME with insufficient liquidity
+            await expect(dex.getETHPrice(ethers.parseEther("1000"))).to.be.revertedWith("Insufficient liquidity for this ETH amount");
+
+            // Try getting MEME price for ETH with insufficient liquidity
+            await expect(dex.getMemePrice(ethers.parseEther("1000"))).to.be.revertedWith("Insufficient liquidity for this MEME amount");
         });
     });
 });

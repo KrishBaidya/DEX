@@ -54,6 +54,10 @@ describe("ExchangeRouter", function () {
         it("Should allow buying MEME tokens with ETH", async function () {
             const buyAmount = ethers.parseEther("0.01");
 
+            // Call getMemePrice to get the amount of MEME required
+            const memePrice = await dex.getMemePrice(buyAmount);
+            console.log("Meme Price for swap:", ethers.formatEther(memePrice));
+
             await router.connect(addr1).swapEthForToken(await meme.getAddress(), buyAmount, {
                 value: ethers.parseEther("1"), // Sending 1 ETH for the swap
             });
@@ -65,8 +69,11 @@ describe("ExchangeRouter", function () {
         it("Should allow selling MEME tokens for ETH", async function () {
             const sellAmount = ethers.parseEther("0.5");
 
-            // Approve a sufficient amount of MEME tokens for the DEX to transfer
+            // Call getETHPrice to get the amount of ETH required for the swap
             const ethPrice = await dex.getETHPrice(sellAmount);
+            console.log("ETH Price for selling MEME:", ethers.formatEther(ethPrice));
+
+            // Approve the sell amount of MEME for the DEX
             await meme.connect(addr1).approve(await dex.getAddress(), ethPrice);
 
             const addr1InitialEthBalance = await ethers.provider.getBalance(addr1.address);
@@ -81,58 +88,54 @@ describe("ExchangeRouter", function () {
             const addr1EthBalance = await ethers.provider.getBalance(addr1.address);
             expect(addr1EthBalance).to.be.gte(addr1InitialEthBalance - gasCost); // addr1 should have more ETH
         });
-        
+
         it("Should allow swapping from one token (Token A) to another token (Token B)", async function () {
             // Deploy another token (Token B) and DEX for it
             const MemeTokenB = await ethers.getContractFactory("MEME");
             const memeB = await MemeTokenB.deploy(addr1.address);
             await memeB.waitForDeployment();
             await router.createDex(await memeB.getAddress(), taxRate);
-        
+
             const DexFactory = await ethers.getContractFactory("DEX");
             dex = DexFactory.attach(await router.getDex(await meme.getAddress()));
             dexB = DexFactory.attach(await router.getDex(await memeB.getAddress()));
-        
+
             // Mint MEME tokens to addr1
             await memeB.connect(addr1).mint(addr1.address, ethers.parseEther("1000"));
-        
-            // Add liquidity to both dex and dexB
-            const liquidityMemeA = ethers.parseEther("100"); // For Token A (MEME)
-            const liquidityEthA = ethers.parseEther("10");
-        
-            const liquidityMemeB = ethers.parseEther("100"); // For Token B (MEME B)
-            const liquidityEthB = ethers.parseEther("10");
-        
-            // Approve and add liquidity to DEX A
-            await meme.connect(addr1).approve(await dex.getAddress(), liquidityMemeA);
-            await dex.connect(addr1).stack(liquidityMemeA, { value: liquidityEthA });
-        
-            // Approve and add liquidity to DEX B
-            await memeB.connect(addr1).approve(await dexB.getAddress(), liquidityMemeB);
-            await dexB.connect(addr1).stack(liquidityMemeB, { value: liquidityEthB });
-        
-            // Get available liquidity for MEME B (Token B) in DEX B
-            const dexBMemeBBalance = await memeB.balanceOf(dexB.getAddress());
-        
-            // Determine a safe swap amount based on the available liquidity in DEX B
-            const swapAmount = ethers.parseEther("5"); // Try swapping 5 tokens
-            const swapableAmount = dexBMemeBBalance >= swapAmount ? swapAmount : dexBMemeBBalance;
-        
-            console.log("Swapping amount:", ethers.formatEther(swapableAmount));  // Log the swapable amount
-        
-            // Approve Token A (meme) for the swapableAmount
-            await meme.connect(addr1).approve(await dex.getAddress(), swapableAmount * 20000n);
-            await memeB.connect(addr1).approve(await dexB.getAddress(), swapableAmount * 20000n);
-        
-            // Swap Token A (MEME) to Token B (MEME B) based on available liquidity
-            await router.connect(addr1).swapTokenAtoTokenB(await meme.getAddress(), await memeB.getAddress(), swapableAmount);
-        
-            // Validate balances after the swap
+
+            // Approve tokens to both DEX A and DEX B for addr1
+            await meme.connect(addr1).approve(await dex.getAddress(), ethers.parseEther("1000"));
+            await memeB.connect(addr1).approve(await dexB.getAddress(), ethers.parseEther("1000"));
+
+            // Add liquidity to both DEX A and DEX B
+            const memeAmountA = ethers.parseEther("100"); // Adjust as needed
+            const ethAmountA = ethers.parseEther("1"); // Adjust as needed
+            await dex.connect(addr1).stack(memeAmountA, { value: ethAmountA });
+
+            const memeAmountB = ethers.parseEther("100"); // Adjust as needed
+            const ethAmountB = ethers.parseEther("1"); // Adjust as needed
+            await dexB.connect(addr1).stack(memeAmountB, { value: ethAmountB });
+
+            // Swap Amount
+            const swapAmount = ethers.parseEther("0.5");
+
+            // Call getMemePrice to get the amount of MEME required
+            const memePrice = await dex.getMemePrice(swapAmount);
+
+            // Call getETHPrice to get the amount of ETH required
+            const ethPrice = await dex.getETHPrice(swapAmount);
+
+            console.log("Meme Price for swap:", ethers.formatEther(memePrice));
+            console.log("ETH Price for swap:", ethers.formatEther(ethPrice));
+
+            // Swap Token A (MEME) to Token B (MEME B)
+            await router.connect(addr1).swapTokenAtoTokenB(await meme.getAddress(), await memeB.getAddress(), swapAmount);
+
             const addr1MemeBBalance = await memeB.balanceOf(addr1.address);
-            expect(addr1MemeBBalance).to.be.gte(swapableAmount); // addr1 receives Token B (MEME B)
+            expect(addr1MemeBBalance).to.be.gte(swapAmount); // addr1 receives Token B (MEME B)
         });
-        
     });
+
 
     describe("Pausing Functions", function () {
         it("Should allow owner to pause and unpause the router", async function () {
