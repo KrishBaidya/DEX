@@ -2,9 +2,9 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.27;
 
-import "./DEX.sol"; // Ensure DEX.sol is imported correctly
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import "./DEX.sol";
 
 contract ExchangeRouter is Pausable, Ownable {
     // Mapping to store token addresses mapped to their DEX addresses
@@ -30,101 +30,84 @@ contract ExchangeRouter is Pausable, Ownable {
     /**
      * @dev Creates a new DEX for a token if one doesn't already exist.
      */
-    function createDex(address tokenAddress, uint256 taxRate) public onlyOwner {
+    function createDex(
+        address tokenAddress,
+        address poolAddress
+    ) public onlyOwner {
         require(
             tokenToDex[tokenAddress] == address(0x0),
             "A DEX is already available for this token!"
         );
-        DEX newDex = new DEX(address(this), tokenAddress, taxRate);
-        tokenToDex[tokenAddress] = payable(address(newDex));
+        tokenToDex[tokenAddress] = payable(
+            address(new DEX(address(this), address(poolAddress)))
+        );
     }
 
     /**
-     * @dev Allows users to buy a specific amount of MEME tokens with ETH.
-     * Calls the `buy` function in the respective DEX.
+     * @dev Calculates the best price for buying a specific amount of tokens
      */
-    function swapEthForToken(
+    function getBestBuyPrice(
         address tokenAddress,
         uint256 memeAmount
-    ) public payable whenNotPaused {
-        DEX dex = getDex(tokenAddress);
-        dex.buy{value: msg.value}(msg.sender, memeAmount);
+    ) public view returns (uint256) {
+        return getDex(tokenAddress).pool().getMemePrice(memeAmount);
     }
 
     /**
-     * @dev Allows users to sell a specific amount of MEME tokens for ETH.
-     * Calls the `sell` function in the respective DEX.
+     * @dev Calculates the best price for selling a specific amount of tokens
      */
-    function swapTokenForEth(
+    function getBestSellPrice(
         address tokenAddress,
         uint256 ethAmount
-    ) public whenNotPaused {
-        DEX dex = getDex(tokenAddress);
-        dex.sell(msg.sender, ethAmount);
+    ) public view returns (uint256) {
+        return getDex(tokenAddress).pool().getETHPrice(ethAmount);
     }
 
     /**
-     * @dev Allows users to swap from one token to another by selling MEME tokens of tokenA for ETH
-     * and using the ETH to buy MEME tokens of tokenB.
+     * @dev Cross-token swap via ETH intermediary
+     * @param tokenA Source token address
+     * @param tokenB Destination token address
+     * @param amountIn Amount of tokenA to swap
+     * @param minAmountOut Minimum amount of tokenB expected
      */
-    function swapTokenAtoTokenB(
+    function swapExactTokensForTokens(
         address tokenA,
         address tokenB,
-        uint256 memeAmount
-    ) public payable whenNotPaused {
+        uint256 amountIn,
+        uint256 minAmountOut
+    ) external payable whenNotPaused {
+        // Get DEXes for both tokens
         DEX dexA = getDex(tokenA);
         DEX dexB = getDex(tokenB);
 
-        // Sell tokenA (MEME) for ETH
-        uint256 ethAmount = dexA.getETHPrice(memeAmount); // Get the amount of ETH for selling MEME
-        console.log("ETH Amount from selling MEME:", ethAmount);
+        // Step 1: Calculate ETH value from tokenA
+        uint256 ethReceived = dexA.pool().getETHPrice(amountIn);
 
-        // Sell MEME for ETH in dexA
-        dexA.sell(msg.sender, memeAmount); // Corrected to pass memeAmount to sell
+        // Step 2: Sell tokenA for ETH
+        dexA.sell(msg.sender, amountIn);
 
-        // Withdraw ETH from dexA to the user
-        dexA.withdraw(msg.sender); // Manually withdraw the ETH to msg.sender
+        // Step 3: Calculate tokenB amount from ETH
+        uint256 tokenBAmount = dexB.pool().getMemePrice(ethReceived);
 
-        // Now msg.sender has the ETH in their wallet, send it to dexB to buy tokenB
-        console.log("Sending ETH to buy MEME B:", ethAmount);
+        // Ensure minimum output is met
+        require(tokenBAmount >= minAmountOut, "Insufficient output amount");
 
-        // Approve the ETH amount to dexB
-        dexB.buy{value: ethAmount}(msg.sender, memeAmount); // Use ethAmount to buy tokenB from dexB
-    }
-
-    /**
-     * @dev Allows users to stack MEME and ETH in the respective DEX.
-     * Calls the `stack` function in the respective DEX.
-     */
-    function stack(
-        address tokenAddress,
-        uint256 memeAmount
-    ) public payable whenNotPaused {
-        DEX dex = getDex(tokenAddress);
-        dex.stack{value: msg.value}(memeAmount);
-    }
-
-    /**
-     * @dev Allows users to unstack MEME and ETH from the respective DEX.
-     * Calls the `unstack` function in the respective DEX.
-     */
-    function unstack(address tokenAddress, uint256 index) public whenNotPaused {
-        DEX dex = getDex(tokenAddress);
-        dex.unstack(index);
+        // Step 4: Buy tokenB with ETH
+        dexB.buy{value: ethReceived}(msg.sender, tokenBAmount);
     }
 
     /**
      * @dev Pauses the given DEX contract.
      */
     function pauseDex(address payable dexAddress) public onlyOwner {
-        DEX(dexAddress).pause();
+        getDex(dexAddress).pause();
     }
 
     /**
      * @dev Unpauses the given DEX contract.
      */
     function unpauseDex(address payable dexAddress) public onlyOwner {
-        DEX(dexAddress).unpause();
+        getDex(dexAddress).unpause();
     }
 
     /**
